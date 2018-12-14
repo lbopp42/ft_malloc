@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2018/12/13 17:33:08 by lbopp            ###   ########.fr       */
+/*   Updated: 2018/12/14 17:58:29 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,7 @@ void	*malloc(size_t size)
 {
 	t_page	*origin;
 	t_meta	*data;
+	void	*ptr;
 
 	//ft_putendl("MALLOC = ");
 	//ft_putnbr(size);
@@ -209,13 +210,23 @@ void	*malloc(size_t size)
 	{
 		if (!g_zone[0].page)
 			g_zone[0].page = create_page(align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
-		return (find_place(g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page))));
+		ptr = find_place(g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)));
+		ft_putchar('\n');
+		ft_putstr("return = ");
+		print_mem(ptr);
+		ft_putchar('\n');
+		return (ptr);
 	}
 	if (size <= SMALL)
 	{
 		if (!g_zone[1].page)
 			g_zone[1].page = create_page(align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
-		return (find_place(g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page))));
+		ptr = find_place(g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)));
+		ft_putchar('\n');
+		ft_putstr("return = ");
+		print_mem(ptr);
+		ft_putchar('\n');
+		return (ptr);
 	}
 	if (!g_zone[2].page)
 	{
@@ -236,12 +247,11 @@ void	*malloc(size_t size)
 	//show_alloc_mem();
 	//ft_putendl("========================================================================");
 	//sleep(2);
+	ft_putchar('\n');
+	ft_putstr("return = ");
+	print_mem((char*)data + sizeof(t_meta));
+	ft_putchar('\n');
 	return ((char*)data + sizeof(t_meta));
-}
-
-void	basic_free(t_meta *data)
-{
-	data->is_free = 1;
 }
 
 void	free_defrag(t_meta *data)
@@ -265,57 +275,33 @@ void	free_defrag(t_meta *data)
 
 t_zone_id	find_zone_free(void *ptr)
 {
-	t_page	*origin;
-	t_zone_id	ret;
-	int		i;		//TODO TEST	
+	t_zone_id	info;
+	t_page		*origin;
+	int			i;
 
-	origin = g_zone[0].page;
-	ret.last = NULL;
 	i = 0;
-	while (origin)
+	info.page = NULL;
+	info.last = NULL;
+	while (i <= 2)
 	{
-		if (origin <= (t_page*)ptr && (char*)origin + N >= (char*)ptr)
+		info.last = NULL;
+		origin = g_zone[i].page;
+		while (origin)
 		{
-			ret.page = origin;
-			ret.type = 0;
-			return (ret);
+			if ((t_page*)ptr >= origin && ((i == 0 && (char*)ptr <= (char*)origin + N) ||
+					(i == 1 && (char*)ptr <= (char*)origin + M) ||
+					(i == 2 && (char*)ptr - align_size(sizeof(t_page)) - sizeof(t_meta) == (char*)origin)))
+			{
+				info.type = i;
+				info.page = origin;
+				return (info);
+			}
+			info.last = origin;
+			origin = origin->next;
 		}
 		i++;
-		ret.last = origin;
-		origin = origin->next;
 	}
-	origin = g_zone[1].page;
-	ret.last = NULL;
-	i = 0;
-	while (origin)
-	{
-		if (origin <= (t_page*)ptr && (char*)origin + N >= (char*)ptr)
-		{
-			ret.page = origin;
-			ret.type = 1;
-			return (ret);
-		}
-		i++;
-		ret.last = origin;
-		origin = origin->next;
-	}
-	origin = g_zone[2].page;
-	ret.last = NULL;
-	i = 0;
-	while (origin)
-	{
-		if ((char*)ptr - align_size(sizeof(t_page*)) - sizeof(t_meta) == (char*)origin)
-		{
-			ret.page = origin;
-			ret.type = 2;
-			return (ret);
-		}
-		i++;
-		ret.last = origin;
-		origin = origin->next;
-	}
-	ret.page = NULL;
-	return (ret);
+	return (info);
 }
 
 void	try_remove_page(t_zone_id ret, t_meta *data)
@@ -326,7 +312,7 @@ void	try_remove_page(t_zone_id ret, t_meta *data)
 			ret.last->next = ret.page->next;
 		else
 			g_zone[ret.type].page = ret.page->next;
-		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page*)));
+		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page)));
 	}
 	else if (((data->size == N - sizeof(t_meta) && ret.type == 0)
 			|| (data->size == M - sizeof(t_meta) && ret.type == 1)) && (ret.last || ret.page->next))
@@ -335,7 +321,7 @@ void	try_remove_page(t_zone_id ret, t_meta *data)
 			ret.last->next = ret.page->next;
 		else
 			g_zone[ret.type].page = ret.page->next;
-		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page*)));
+		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page)));
 	}
 }
 
@@ -343,7 +329,7 @@ int		check_data(t_page *page, t_meta *data)
 {
 	t_meta	*valid_data;
 
-	valid_data = (t_meta*)((char*)page + align_size(sizeof(t_page*)));
+	valid_data = (t_meta*)((char*)page + align_size(sizeof(t_page)));
 	while (valid_data && valid_data != data)
 		valid_data = valid_data->next;
 	if (valid_data && valid_data == data)
@@ -365,50 +351,53 @@ void	free(void *ptr)
 	if (!check_data(ret.page, data))
 		return;
 	free_defrag(data);
-	basic_free(data);
+	data->is_free = 1;
 	try_remove_page(ret, data);
 }
 
 void	*realloc(void *ptr, size_t size)
 {
 	(void)ptr;
-	//free(ptr);
+	free(ptr);
 	return (malloc(size));
 }
 
-int		main(void)
-{
-	char	*str[1000000];
-	char	*str1[10000];
-	char	*str2[10000];
-
-	int i = 0;
-	while (i < 10000)
-	{
-		//str[i] = malloc(1000);
-		//ft_bzero(str[i], 1000);
-		//str1[i] = malloc(100000);
-		//ft_bzero(str1[i], 100000);
-		//str[i] = malloc(500);
-		//ft_bzero(str[i], 500);
-		str1[i] = malloc(2000);
-		ft_bzero(str1[i], 2000);
-		//str2[i] = malloc(1000000);
-		//ft_bzero(str2[i], 1000000);
-		i++;
-	}
-	i = 0;
-	while (i < 10000)
-	{
-		//free(str[i]);
-		free(str1[i]);
-		//free(str2[i]);
-		i++;
-	}
-		ft_putendl("============================================================================");
-		ft_putendl("APRES FREE");
-		show_alloc_mem();
-		ft_putendl("----------------------------------------------------------------------------");
-		sleep(2);
-	return (1);
-}
+//int		main(void)
+//{
+//	ft_putendl("On entre dans le main");
+//	//char	*str[100000];
+//	//char	*str1[100000];
+//	char	*str2[2];
+//	int i;
+//	
+//	i = 0;
+//	while (i < 2)
+//	{
+//		ft_putendl("On malloc");
+//		//str[i] = malloc(1000);
+//		//ft_bzero(str[i], 1000);
+//		//str1[i] = malloc(100000);
+//		//ft_bzero(str1[i], 100000);
+//		//str[i] = malloc(500);
+//		//ft_bzero(str[i], 500);
+//		//str1[i] = malloc(2000);
+//		//ft_bzero(str1[i], 2000);
+//		str2[i] = malloc(1000000);
+//		ft_bzero(str2[i], 1000000);
+//		i++;
+//	}
+//	i = 0;
+//	while (i < 2)
+//	{
+//		//free(str[i]);
+//		//free(str1[i]);
+//		free(str2[i]);
+//		i++;
+//	}
+//	ft_putendl("============================================================================");
+//	ft_putendl("APRES FREE");
+//	show_alloc_mem();
+//	ft_putendl("----------------------------------------------------------------------------");
+//	sleep(2);
+//	return (1);
+//}
