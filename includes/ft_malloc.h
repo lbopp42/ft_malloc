@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/16 10:50:31 by lbopp             #+#    #+#             */
-/*   Updated: 2018/11/11 13:14:35 by lbopp            ###   ########.fr       */
+/*   Updated: 2018/12/18 11:08:35 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ typedef struct	s_zone_id
 }				t_zone_id;
 
 t_zone			g_zone[3];
+void*			g_address[10000];
 pthread_mutex_t g_mutex_stock;
 void			free(void *ptr);
 void			*malloc(size_t size);

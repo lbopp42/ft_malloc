@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2018/12/14 17:58:29 by lbopp            ###   ########.fr       */
+/*   Updated: 2018/12/18 16:12:29 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,27 @@ void	print_mem(void *p0)
 	}
 }
 
+void	print_mem_fd(void *p0, int fd)
+{
+	int i;
+	uintptr_t p;
+
+	p = (uintptr_t)p0;
+	i = (sizeof(p) << 3) - 4;
+	while (i >= 0)
+	{
+		ft_putchar_fd(hex_digit((p >> i) & 0xf), fd);
+		i -= 4;
+	}
+}
+
 void	show_alloc_mem(void)
 {
 	t_page	*page;
 	t_meta	*origin;
+	size_t	total;
 
+	total = 0;
 	page = g_zone[0].page;
 	while (page)
 	{
@@ -57,15 +73,16 @@ void	show_alloc_mem(void)
 		origin = (t_meta*)((char*)page + align_size(sizeof(t_page*)));
 		while (origin)
 		{
-			print_mem(origin);
+			print_mem((char*)origin + sizeof(t_meta));
 			ft_putstr(" - ");
-			print_mem((char*)origin + origin->size);
+			print_mem((char*)origin + sizeof(t_meta) + origin->size);
 			ft_putstr(" : ");
 			ft_putnbr(origin->size);
 			ft_putendl(" octets");
 			ft_putstr("free : ");
 			ft_putnbr(origin->is_free);
 			ft_putendl("");
+			total += origin->size;
 			origin = origin->next;
 		}
 		page = page->next;
@@ -79,15 +96,16 @@ void	show_alloc_mem(void)
 		origin = (t_meta*)((char*)page + align_size(sizeof(t_page*)));
 		while (origin)
 		{
-			print_mem(origin);
+			print_mem((char*)origin + sizeof(t_meta));
 			ft_putstr(" - ");
-			print_mem((char*)origin + origin->size);
+			print_mem((char*)origin + sizeof(t_meta) + origin->size);
 			ft_putstr(" : ");
 			ft_putnbr(origin->size);
 			ft_putendl(" octets");
 			ft_putstr("free : ");
 			ft_putnbr(origin->is_free);
 			ft_putendl("");
+			total += origin->size;
 			origin = origin->next;
 		}
 		page = page->next;
@@ -101,18 +119,21 @@ void	show_alloc_mem(void)
 		origin = (t_meta*)((char*)page + align_size(sizeof(t_page*)));
 		while (origin)
 		{
-			print_mem(origin);
+			print_mem((char*)origin + sizeof(t_meta));
 			ft_putstr(" - ");
-			print_mem((char*)origin + origin->size);
+			print_mem((char*)origin + sizeof(t_meta) + origin->size);
 			ft_putstr(" : ");
 			ft_putnbr(origin->size);
 			ft_putendl(" octets");
 			ft_putstr("free : ");
 			ft_putnbr(origin->is_free);
 			ft_putendl("");
+			total += origin->size;
 			origin = origin->next;
 		}
-		ft_putendl("NEXT");
+		ft_putstr("Total : ");
+		ft_putnbr(total);
+		ft_putendl(" octects");
 		page = page->next;
 	}
 }
@@ -197,24 +218,46 @@ void	*find_place(t_page *page, size_t size_wanted, size_t page_size)
 	return (find_place(page->next, size_wanted, page_size));
 }
 
+void	print_address(void)
+{
+	int i = 0;
+
+	while (i < 10000)
+	{
+		print_mem(g_address[i]);
+		i++;
+	}
+}
+
+#include <fcntl.h>
+
 void	*malloc(size_t size)
 {
 	t_page	*origin;
 	t_meta	*data;
 	void	*ptr;
+	//static int	fd = 0;
 
 	//ft_putendl("MALLOC = ");
 	//ft_putnbr(size);
 	//ft_putendl("");
+	//if (fd == 0)
+	//	fd = open("free.txt", O_CREAT | O_APPEND | O_RDWR);
+	ft_putendl("MALLOC");
 	if (size <= TINY)
 	{
 		if (!g_zone[0].page)
 			g_zone[0].page = create_page(align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
 		ptr = find_place(g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)));
-		ft_putchar('\n');
-		ft_putstr("return = ");
-		print_mem(ptr);
-		ft_putchar('\n');
+		//ft_putchar('\n');
+		//ft_putstr("return = ");
+		//print_mem(ptr);
+		//ft_putchar('\n');
+		//g_address[i] = ptr;
+		//print_mem_fd(ptr, fd);
+		//ft_putendl_fd(" TINY", fd);
+		ft_putendl("======================================");
+		show_alloc_mem();
 		return (ptr);
 	}
 	if (size <= SMALL)
@@ -222,10 +265,15 @@ void	*malloc(size_t size)
 		if (!g_zone[1].page)
 			g_zone[1].page = create_page(align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
 		ptr = find_place(g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)));
-		ft_putchar('\n');
-		ft_putstr("return = ");
-		print_mem(ptr);
-		ft_putchar('\n');
+		//ft_putchar('\n');
+		//ft_putstr("return = ");
+		//print_mem(ptr);
+		//ft_putchar('\n');
+		//g_address[i] = ptr;
+		//print_mem_fd(ptr, fd);
+		//ft_putendl_fd(" SMALL", fd);
+		ft_putendl("======================================");
+		show_alloc_mem();
 		return (ptr);
 	}
 	if (!g_zone[2].page)
@@ -247,10 +295,15 @@ void	*malloc(size_t size)
 	//show_alloc_mem();
 	//ft_putendl("========================================================================");
 	//sleep(2);
-	ft_putchar('\n');
-	ft_putstr("return = ");
-	print_mem((char*)data + sizeof(t_meta));
-	ft_putchar('\n');
+	//ft_putchar('\n');
+	//ft_putstr("return = ");
+	//print_mem((char*)data + sizeof(t_meta));
+	//ft_putchar('\n');
+	//g_address[i] = (void*)((char*)data + sizeof(t_meta));
+	//print_mem_fd((char*)data + sizeof(t_meta), fd);
+	//ft_putendl_fd(" LARGE", fd);
+	ft_putendl("======================================");
+	show_alloc_mem();
 	return ((char*)data + sizeof(t_meta));
 }
 
@@ -339,7 +392,6 @@ int		check_data(t_page *page, t_meta *data)
 
 void	free(void *ptr)
 {
-	(void)ptr;
 	t_meta		*data;
 	t_zone_id	ret;
 
@@ -353,13 +405,23 @@ void	free(void *ptr)
 	free_defrag(data);
 	data->is_free = 1;
 	try_remove_page(ret, data);
+	ft_putendl("FREE");
+	show_alloc_mem();
 }
 
 void	*realloc(void *ptr, size_t size)
 {
-	(void)ptr;
 	free(ptr);
 	return (malloc(size));
+}
+
+void	*calloc(size_t count, size_t size)
+{
+	void	*tmp;
+	if (!(tmp = malloc(count * size)))
+		return (NULL);
+	bzero(tmp, count * size);
+	return (tmp);
 }
 
 //int		main(void)
