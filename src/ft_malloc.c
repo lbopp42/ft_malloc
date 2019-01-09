@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/09 12:45:24 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/09 17:51:05 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,18 +408,17 @@ void	free_defrag(t_meta *data)
 {
 	if (data->next && data->next->is_free == 1)
 	{
-		data->size += data->next->size + align_size(sizeof(t_meta));
+		data->size += data->next->size + sizeof(t_meta);
 		if (data->next->next)
 			data->next->next->prev = data;
 		data->next = data->next->next;
 	}
 	if (data->prev && data->prev->is_free == 1)
 	{
-		data->prev->size += data->size + align_size(sizeof(t_meta));
+		data->prev->size += data->size + sizeof(t_meta);
 		if (data->next)
 			data->next->prev = data->prev;
 		data->prev->next = data->next;
-		*data = *data->prev;
 	}
 }
 
@@ -508,7 +507,7 @@ void	free(void *ptr)
 	//	data->next = data->next->next;
 	//}
 	data->is_free = 1;
-	//free_defrag(data); //TODO Segfault quand on met le free_defrag
+	free_defrag(data); //TODO Segfault quand on met le free_defrag
 	// FIN DEBUG
 	try_remove_page(ret, data);
 	//ft_putchar('\n');

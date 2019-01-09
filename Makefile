@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/09 11:28:36 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/09 17:38:20 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,18 +28,18 @@ RM = rm -f
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	@make -C libft
-	@$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g -O
+	make -C libft
+	$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g -O
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes -O
+	$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes -O
 
 clean:
-	@make -C libft clean
-	@$(RM) $(OBJ)
+	make -C libft clean
+	$(RM) $(OBJ)
 
 fclean: clean
-	@make -C libft fclean
-	@$(RM) $(NAME)
+	make -C libft fclean
+	$(RM) $(NAME)
 
 re: fclean all
