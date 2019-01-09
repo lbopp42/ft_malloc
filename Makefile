@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2018/12/18 11:22:40 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/09 11:28:36 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,10 +29,10 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	@make -C libft
-	@$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g
+	@$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g -O
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes
+	@$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes -O
 
 clean:
 	@make -C libft clean
