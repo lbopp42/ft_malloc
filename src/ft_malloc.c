@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/09 17:51:05 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/10 11:11:40 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -507,7 +507,7 @@ void	free(void *ptr)
 	//	data->next = data->next->next;
 	//}
 	data->is_free = 1;
-	free_defrag(data); //TODO Segfault quand on met le free_defrag
+	free_defrag(data);
 	// FIN DEBUG
 	try_remove_page(ret, data);
 	//ft_putchar('\n');
