@@ -6,11 +6,12 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/10 11:11:40 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/10 14:48:42 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
+#include "signal.h" //TODO DEBUG
 #define DEBUG 0
 
 size_t	align_size(size_t init_size)
@@ -313,18 +314,22 @@ void	print_address(void)
 
 #include <fcntl.h>
 
+void	rekt(int useless)
+{
+	(void)useless;
+	ft_putendl_fd("SEGFAULT !\n", 2);
+	show_alloc_mem_fd(2);
+	exit(42);
+}
+
 void	*malloc(size_t size)
 {
 	t_page	*origin;
 	t_meta	*data;
 	void	*ptr;
-	//static int	fd = 0;
 
-	//ft_putendl("MALLOC = ");
-	//ft_putnbr(size);
-	//ft_putendl("");
-	//if (fd == 0)
-	//	fd = open("free.txt", O_CREAT | O_APPEND | O_RDWR);
+	signal(SIGSEGV, rekt);
+	ft_putendl_fd("MALLOC", 2);
 	if (DEBUG == 1)
 	{
 		ft_putendl_fd("MALLOC", 2);
@@ -334,15 +339,6 @@ void	*malloc(size_t size)
 		if (!g_zone[0].page)
 			g_zone[0].page = create_page(align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
 		ptr = find_place(g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)));
-		//ft_putchar('\n');
-		//ft_putstr("return = ");
-		//print_mem(ptr);
-		//ft_putchar('\n');
-		//g_address[i] = ptr;
-		//print_mem_fd(ptr, fd);
-		//ft_putendl_fd(" TINY", fd);
-	//print_mem(ptr);
-		//ft_putchar('\n');
 	if (DEBUG == 1)
 	{
 		ft_putendl_fd("======================================", 2);
@@ -355,20 +351,11 @@ void	*malloc(size_t size)
 		if (!g_zone[1].page)
 			g_zone[1].page = create_page(align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
 		ptr = find_place(g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)));
-		//ft_putchar('\n');
-		//ft_putstr("return = ");
-		//print_mem(ptr);
-		//ft_putchar('\n');
-		//g_address[i] = ptr;
-		//print_mem_fd(ptr, fd);
-		//ft_putendl_fd(" SMALL", fd);
-	//print_mem(ptr);
-		//ft_putchar('\n');
-	if (DEBUG == 1)
-	{
-		ft_putendl_fd("======================================", 2);
-		show_alloc_mem_fd(2);
-	}
+		if (DEBUG == 1)
+		{
+			ft_putendl_fd("======================================", 2);
+			show_alloc_mem_fd(2);
+		}
 		return (ptr);
 	}
 	if (!g_zone[2].page)
@@ -386,16 +373,6 @@ void	*malloc(size_t size)
 		g_zone[2].page = origin;
 	}
 	data->is_free = 0;
-	//sleep(2);
-	//ft_putchar('\n');
-	//ft_putstr("return = ");
-	//print_mem((char*)data + sizeof(t_meta));
-	//ft_putchar('\n');
-	//g_address[i] = (void*)((char*)data + sizeof(t_meta));
-	//print_mem_fd((char*)data + sizeof(t_meta), fd);
-	//ft_putendl_fd(" LARGE", fd);
-	//print_mem((char*)data + sizeof(t_meta));
-	//ft_putchar('\n');
 	if (DEBUG == 1)
 	{
 		ft_putendl_fd("======================================", 2);
@@ -404,21 +381,22 @@ void	*malloc(size_t size)
 	return ((char*)data + sizeof(t_meta));
 }
 
-void	free_defrag(t_meta *data)
+void	free_defrag(t_meta **data)
 {
-	if (data->next && data->next->is_free == 1)
+	if ((*data)->next && (*data)->next->is_free == 1)
 	{
-		data->size += data->next->size + sizeof(t_meta);
-		if (data->next->next)
-			data->next->next->prev = data;
-		data->next = data->next->next;
+		(*data)->size += (*data)->next->size + sizeof(t_meta);
+		if ((*data)->next->next)
+			(*data)->next->next->prev = *data;
+		(*data)->next = (*data)->next->next;
 	}
-	if (data->prev && data->prev->is_free == 1)
+	if ((*data)->prev && (*data)->prev->is_free == 1)
 	{
-		data->prev->size += data->size + sizeof(t_meta);
-		if (data->next)
-			data->next->prev = data->prev;
-		data->prev->next = data->next;
+		(*data)->prev->size += (*data)->size + sizeof(t_meta);
+		if ((*data)->next)
+			(*data)->next->prev = (*data)->prev;
+		(*data)->prev->next = (*data)->next;
+		*data = (*data)->prev;
 	}
 }
 
@@ -491,6 +469,7 @@ void	free(void *ptr)
 	t_meta		*data;
 	t_zone_id	ret;
 
+	ft_putendl_fd("FREE", 2);
 	if (ptr == NULL)
 		return;
 	if (!(ret = find_zone_free(ptr)).page)
@@ -498,19 +477,9 @@ void	free(void *ptr)
 	data = (t_meta*)((char*)ptr - sizeof(t_meta));
 	if (!check_data(ret.page, data))
 		return;
-	// DEBUG
-	//if (data->next && data->next->is_free == 1)
-	//{
-	//	data->size += data->next->size + align_size(sizeof(t_meta));
-	//	if (data->next->next)
-	//		data->next->next->prev = data;
-	//	data->next = data->next->next;
-	//}
 	data->is_free = 1;
-	free_defrag(data);
-	// FIN DEBUG
+	free_defrag(&data);
 	try_remove_page(ret, data);
-	//ft_putchar('\n');
 	if (DEBUG == 1)
 	{
 		ft_putendl_fd("FREE", 2);
@@ -525,6 +494,7 @@ void	*realloc(void *ptr, size_t size)
 	t_meta	*data;
 	t_zone_id	ret;
 
+	ft_putendl_fd("REALLOC", 2);
 	if (!ptr)
 		return (malloc(size));
 	if (size == 0 && ptr)
@@ -539,7 +509,7 @@ void	*realloc(void *ptr, size_t size)
 	data = (t_meta*)((char*)ptr - sizeof(t_meta));
 	if (!check_data(ret.page, data))
 		return (NULL);
-	if (align_size(size) <= data->size)
+	if (data->size >= align_size(size))
 		return (ptr);
 	new = malloc(size);
 	ft_memcpy(new, ptr, data->size);
@@ -559,6 +529,7 @@ void	*realloc(void *ptr, size_t size)
 
 void	*calloc(size_t count, size_t size)
 {
+	ft_putendl_fd("CALLOC", 2);
 	void	*tmp;
 	if (!(tmp = malloc(count * size)))
 		return (NULL);
