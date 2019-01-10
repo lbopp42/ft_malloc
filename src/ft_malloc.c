@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/10 14:48:42 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/10 16:54:08 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,9 +247,6 @@ t_page	*create_page(size_t page_size, t_page *next_page)
 	t_meta	*data;
 	t_page	*new_page;
 
-	//ft_putstr("Creation de page de taille = ");
-	//ft_putnbr(round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))));
-	//ft_putendl("");
 	new_page = (t_page*)mmap(0, round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))), PROT_READ | PROT_WRITE,
 			MAP_ANON | MAP_PRIVATE, -1, 0);
 	if (new_page == MAP_FAILED)
@@ -260,7 +257,6 @@ t_page	*create_page(size_t page_size, t_page *next_page)
 	new_page->next = next_page;
 	data = (t_meta*)((char*)new_page + align_size(sizeof(t_page)));
 	init_data(data, round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))) - align_size(sizeof(t_page)) - sizeof(t_meta));
-	//ft_bzero((char*)data + sizeof(t_meta), data->size);
 	return (new_page);
 }
 
@@ -285,20 +281,20 @@ void	*fill_place(t_meta *data, size_t size_wanted, size_t page_size)
 	return ((char*)data + sizeof(t_meta));
 }
 
-void	*find_place(t_page *page, size_t size_wanted, size_t page_size)
+void	*find_place(t_page **page, size_t size_wanted, size_t page_size)
 {
 	t_meta	*data;
 
-	if (!page)
-		page = create_page(page_size, NULL);
-	data = (t_meta*)((char*)page + align_size(sizeof(t_page)));
+	if (!*page)
+		*page = create_page(page_size, NULL);
+	data = (t_meta*)((char*)*page + align_size(sizeof(t_page)));
 	while (data)
 	{
 		if (data->is_free && data->size >= size_wanted)
 			return (fill_place(data, size_wanted, page_size));
 		data = data->next;
 	}
-	return (find_place(page->next, size_wanted, page_size));
+	return (find_place(&(*page)->next, size_wanted, page_size));
 }
 
 void	print_address(void)
@@ -329,28 +325,24 @@ void	*malloc(size_t size)
 	void	*ptr;
 
 	signal(SIGSEGV, rekt);
-	ft_putendl_fd("MALLOC", 2);
+	//ft_putendl_fd("MALLOC", 2);
 	if (DEBUG == 1)
 	{
 		ft_putendl_fd("MALLOC", 2);
 	}
 	if (size <= TINY)
 	{
-		if (!g_zone[0].page)
-			g_zone[0].page = create_page(align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
-		ptr = find_place(g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)));
-	if (DEBUG == 1)
-	{
-		ft_putendl_fd("======================================", 2);
-		show_alloc_mem_fd(2);
-	}
+		ptr = find_place(&g_zone[0].page, align_size(size), align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page)));
+		if (DEBUG == 1)
+		{
+			ft_putendl_fd("======================================", 2);
+			show_alloc_mem_fd(2);
+		}
 		return (ptr);
 	}
 	if (size <= SMALL)
 	{
-		if (!g_zone[1].page)
-			g_zone[1].page = create_page(align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)), NULL);
-		ptr = find_place(g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)));
+		ptr = find_place(&g_zone[1].page, align_size(size), align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page)));
 		if (DEBUG == 1)
 		{
 			ft_putendl_fd("======================================", 2);
@@ -469,7 +461,7 @@ void	free(void *ptr)
 	t_meta		*data;
 	t_zone_id	ret;
 
-	ft_putendl_fd("FREE", 2);
+	//ft_putendl_fd("FREE", 2);
 	if (ptr == NULL)
 		return;
 	if (!(ret = find_zone_free(ptr)).page)
@@ -494,7 +486,7 @@ void	*realloc(void *ptr, size_t size)
 	t_meta	*data;
 	t_zone_id	ret;
 
-	ft_putendl_fd("REALLOC", 2);
+	//ft_putendl_fd("REALLOC", 2);
 	if (!ptr)
 		return (malloc(size));
 	if (size == 0 && ptr)
@@ -529,7 +521,7 @@ void	*realloc(void *ptr, size_t size)
 
 void	*calloc(size_t count, size_t size)
 {
-	ft_putendl_fd("CALLOC", 2);
+	//ft_putendl_fd("CALLOC", 2);
 	void	*tmp;
 	if (!(tmp = malloc(count * size)))
 		return (NULL);
