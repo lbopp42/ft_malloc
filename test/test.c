@@ -35,9 +35,21 @@ void	try_create_page()
 	show_alloc_mem();
 }
 
+void	create_many_small_page()
+{
+	char	*str[150];
+	int		i;
+
+	i = 0;
+	while (i < 150)
+		str[i++] = malloc(130000);
+	show_alloc_mem();
+}
+
 int main(void)
 {
-	try_create_page();
+	//try_create_page();
+	create_many_small_page();
 	//launch_realloc();
 	return (0);
 }

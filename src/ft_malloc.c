@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/10 16:54:08 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/10 17:21:46 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,7 +242,7 @@ void	init_data(t_meta *data, size_t page_size)
 	data->next = NULL;
 }
 
-t_page	*create_page(size_t page_size, t_page *next_page)
+t_page	*create_page(size_t page_size)
 {
 	t_meta	*data;
 	t_page	*new_page;
@@ -254,7 +254,7 @@ t_page	*create_page(size_t page_size, t_page *next_page)
 		ft_putendl("FAIL MAP"); //TODO DEBUG
 		exit(1);
 	}
-	new_page->next = next_page;
+	new_page->next = NULL;
 	data = (t_meta*)((char*)new_page + align_size(sizeof(t_page)));
 	init_data(data, round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))) - align_size(sizeof(t_page)) - sizeof(t_meta));
 	return (new_page);
@@ -286,11 +286,12 @@ void	*find_place(t_page **page, size_t size_wanted, size_t page_size)
 	t_meta	*data;
 
 	if (!*page)
-		*page = create_page(page_size, NULL);
+		*page = create_page(page_size);
 	data = (t_meta*)((char*)*page + align_size(sizeof(t_page)));
 	while (data)
 	{
-		if (data->is_free && data->size >= size_wanted)
+		//if (data->is_free && data->size >= size_wanted) // TODO BEFORE
+		if (data->is_free && data->size >= size_wanted + sizeof(t_meta))
 			return (fill_place(data, size_wanted, page_size));
 		data = data->next;
 	}
@@ -324,7 +325,7 @@ void	*malloc(size_t size)
 	t_meta	*data;
 	void	*ptr;
 
-	signal(SIGSEGV, rekt);
+	//signal(SIGSEGV, rekt);
 	//ft_putendl_fd("MALLOC", 2);
 	if (DEBUG == 1)
 	{
@@ -352,7 +353,7 @@ void	*malloc(size_t size)
 	}
 	if (!g_zone[2].page)
 	{
-		g_zone[2].page = create_page(align_size(size), NULL);
+		g_zone[2].page = create_page(align_size(size));
 		data = (t_meta*)((char*)g_zone[2].page + align_size(sizeof(t_page)));
 	}
 	else
@@ -360,7 +361,7 @@ void	*malloc(size_t size)
 		origin = g_zone[2].page;
 		while (g_zone[2].page->next)
 			g_zone[2].page = g_zone[2].page->next;
-		g_zone[2].page->next = create_page(align_size(size), NULL);
+		g_zone[2].page->next = create_page(align_size(size));
 		data = (t_meta*)((char*)g_zone[2].page->next + align_size(sizeof(t_page)));
 		g_zone[2].page = origin;
 	}
