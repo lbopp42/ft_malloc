@@ -46,10 +46,98 @@ void	create_many_small_page()
 	show_alloc_mem();
 }
 
+void	free_no_alloc()
+{
+	char	*ptr;
+
+	ptr = "TEST";
+	free(ptr);
+}
+
+void	malloc_than_free_large()
+{
+	char	*str[3];
+	int		i;
+
+	i = 0;
+	while (i < 3)
+	{
+		str[i] = malloc(17000000);
+		i++;
+	}
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	free(str[1]);
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	free(str[2]);
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	free(str[0]);
+	show_alloc_mem();
+}
+
+void	malloc_than_free_first_large()
+{
+	char	*str[3];
+	int		i;
+
+	i = 0;
+	while (i < 3)
+	{
+		str[i] = malloc(17000000);
+		i++;
+	}
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	sleep(3);
+	free(str[0]);
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	sleep(3);
+	free(str[1]);
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	sleep(3);
+	free(str[2]);
+	show_alloc_mem();
+	sleep(3);
+}
+
+void	try_something()
+{
+	char	*str[150];
+	int		i;
+
+	i = 0;
+	while (i < 150)
+		str[i++] = malloc(130000);
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	sleep(3);
+	i--;
+	while ( i > 128)
+	{
+		free(str[i]);
+		i--;
+	}
+	show_alloc_mem();
+	ft_putendl("=================================================");
+	//i++;
+	//while (i < 150)
+	//	str[i++] = malloc(130000);
+	//show_alloc_mem();
+	//ft_putendl("=================================================");
+}
+
 int main(void)
 {
 	//try_create_page();
-	create_many_small_page();
+	//create_many_small_page();
 	//launch_realloc();
+	//free_no_alloc();
+	//malloc_than_free_large();
+	malloc_than_free_first_large();
+	//try_something();
 	return (0);
 }

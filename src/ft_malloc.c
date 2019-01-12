@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/12 09:29:22 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/12 10:42:04 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -383,29 +383,29 @@ t_zone_id	find_zone_free(void *ptr)
 {
 	t_zone_id	info;
 	t_page		*origin;
-	int			i;
+	int			type;
 
-	i = 0;
+	type = 0;
 	info.page = NULL;
 	info.last = NULL;
-	while (i <= 2)
+	while (type <= 2)
 	{
 		info.last = NULL;
-		origin = g_zone[i].page;
+		origin = g_zone[type].page;
 		while (origin)
 		{
-			if ((t_page*)ptr >= origin && ((i == 0 && (char*)ptr <= (char*)origin + N) ||
-					(i == 1 && (char*)ptr <= (char*)origin + M) ||
-					(i == 2 && (char*)ptr - align_size(sizeof(t_page)) - sizeof(t_meta) == (char*)origin)))
+			if (((t_page*)ptr >= origin && ((type == 0 && (char*)ptr <= (char*)origin + N) ||
+					(type == 1 && (char*)ptr <= (char*)origin + M))) ||
+					(type == 2 && (char*)ptr - align_size(sizeof(t_page)) - sizeof(t_meta) == (char*)origin))
 			{
-				info.type = i;
+				info.type = type;
 				info.page = origin;
 				return (info);
 			}
 			info.last = origin;
 			origin = origin->next;
 		}
-		i++;
+		type++;
 	}
 	return (info);
 }
@@ -420,8 +420,8 @@ void	try_remove_page(t_zone_id ret, t_meta *data)
 			g_zone[ret.type].page = ret.page->next;
 		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page)));
 	}
-	else if (((data->size == N - sizeof(t_meta) && ret.type == 0)
-			|| (data->size == M - sizeof(t_meta) && ret.type == 1)) && (ret.last || ret.page->next))
+	else if (((ret.type == 0 && data->size == N - sizeof(t_meta) - align_size(sizeof(t_page)))
+			|| (ret.type == 1 && data->size == M - sizeof(t_meta) - align_size(sizeof(t_page)))) && (ret.last || ret.page->next))
 	{
 		if (ret.last)
 			ret.last->next = ret.page->next;
@@ -436,10 +436,12 @@ int		check_data(t_page *page, t_meta *data)
 	t_meta	*valid_data;
 
 	valid_data = (t_meta*)((char*)page + align_size(sizeof(t_page)));
-	while (valid_data && valid_data != data)
+	while (valid_data)
+	{
+		if (valid_data && valid_data == data)
+			return (1);
 		valid_data = valid_data->next;
-	if (valid_data && valid_data == data)
-		return (1);
+	}
 	return (0);
 }
 
