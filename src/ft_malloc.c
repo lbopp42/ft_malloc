@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/12 10:42:04 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/12 15:34:09 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,12 +234,12 @@ size_t	round_page_size(size_t init_size)
 		return (init_size + os_page_size - init_size % os_page_size);
 }
 
-void	init_data(t_meta *data, size_t page_size)
+void	init_data(t_meta **data, size_t page_size)
 {
-	data->size = page_size;
-	data->is_free = 1;
-	data->prev = NULL;
-	data->next = NULL;
+	(*data)->size = page_size;
+	(*data)->is_free = 1;
+	(*data)->prev = NULL;
+	(*data)->next = NULL;
 }
 
 t_page	*create_page(size_t page_size)
@@ -256,7 +256,7 @@ t_page	*create_page(size_t page_size)
 	}
 	new_page->next = NULL;
 	data = (t_meta*)((char*)new_page + align_size(sizeof(t_page)));
-	init_data(data, round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))) - align_size(sizeof(t_page)) - sizeof(t_meta));
+	init_data(&data, round_page_size(page_size + sizeof(t_meta) + align_size(sizeof(t_page))) - align_size(sizeof(t_page)) - sizeof(t_meta));
 	return (new_page);
 }
 
@@ -267,8 +267,8 @@ void	*fill_place(t_meta *data, size_t size_wanted, size_t page_size)
 	next_tmp = data->next;
 	if ((data->size >= size_wanted + sizeof(t_meta) + ALIGN &&
 				page_size == align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page))) ||
-				(data->size >= size_wanted + sizeof(t_meta) + TINY + 1 &&
-				 page_size == align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page))))
+			(data->size >= size_wanted + sizeof(t_meta) + TINY + 1 &&
+			 page_size == align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page))))
 	{
 		data->next = (t_meta*)((char*)data + size_wanted + sizeof(t_meta));
 		data->next->is_free = 1;
@@ -362,6 +362,9 @@ void	*malloc(size_t size)
 
 void	free_defrag(t_meta **data)
 {
+	int	i;
+
+	i = 0;
 	if ((*data)->next && (*data)->next->is_free == 1)
 	{
 		(*data)->size += (*data)->next->size + sizeof(t_meta);
@@ -371,11 +374,29 @@ void	free_defrag(t_meta **data)
 	}
 	if ((*data)->prev && (*data)->prev->is_free == 1)
 	{
-		(*data)->prev->size += (*data)->size + sizeof(t_meta);
-		if ((*data)->next)
-			(*data)->next->prev = (*data)->prev;
-		(*data)->prev->next = (*data)->next;
-		*data = (*data)->prev;
+		//(*data)->prev->size += (*data)->size + sizeof(t_meta);
+		//if ((*data)->next)
+		//	(*data)->next->prev = (*data)->prev;
+		//(*data)->prev->next = (*data)->next;
+		if ((*data) && (*data)->is_free == 1)
+		{
+			//(*data)->size += (*data)->next->size + sizeof(t_meta);
+			//if ((*data)->next->next)
+			//	(*data)->next->next->prev = *data;
+			//(*data)->next = (*data)->next->next;
+			//i++;
+			return ;
+		}
+		(*data) = (*data)->prev;
+		if ((*data)->next && (*data)->next->is_free == 1)
+		{
+			(*data)->size += (*data)->next->size + sizeof(t_meta);
+			if ((*data)->next->next)
+				(*data)->next->next->prev = *data;
+			(*data)->next = (*data)->next->next;
+			//i++;
+			return ;
+		}
 	}
 }
 
@@ -395,7 +416,7 @@ t_zone_id	find_zone_free(void *ptr)
 		while (origin)
 		{
 			if (((t_page*)ptr >= origin && ((type == 0 && (char*)ptr <= (char*)origin + N) ||
-					(type == 1 && (char*)ptr <= (char*)origin + M))) ||
+							(type == 1 && (char*)ptr <= (char*)origin + M))) ||
 					(type == 2 && (char*)ptr - align_size(sizeof(t_page)) - sizeof(t_meta) == (char*)origin))
 			{
 				info.type = type;
@@ -421,7 +442,7 @@ void	try_remove_page(t_zone_id ret, t_meta *data)
 		munmap(ret.page, data->size + sizeof(t_meta) + align_size(sizeof(t_page)));
 	}
 	else if (((ret.type == 0 && data->size == N - sizeof(t_meta) - align_size(sizeof(t_page)))
-			|| (ret.type == 1 && data->size == M - sizeof(t_meta) - align_size(sizeof(t_page)))) && (ret.last || ret.page->next))
+				|| (ret.type == 1 && data->size == M - sizeof(t_meta) - align_size(sizeof(t_page)))) && (ret.last || ret.page->next))
 	{
 		if (ret.last)
 			ret.last->next = ret.page->next;
@@ -483,7 +504,7 @@ void	*realloc(void *ptr, size_t size)
 		free(ptr);
 		return (malloc(ALIGN));
 	}
-		
+
 
 	if (!(ret = find_zone_free(ptr)).page)
 		return (NULL);
