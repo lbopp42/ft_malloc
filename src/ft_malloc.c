@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/10 17:21:46 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/12 09:29:22 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,26 +290,12 @@ void	*find_place(t_page **page, size_t size_wanted, size_t page_size)
 	data = (t_meta*)((char*)*page + align_size(sizeof(t_page)));
 	while (data)
 	{
-		//if (data->is_free && data->size >= size_wanted) // TODO BEFORE
-		if (data->is_free && data->size >= size_wanted + sizeof(t_meta))
+		if (data->is_free && data->size >= size_wanted)
 			return (fill_place(data, size_wanted, page_size));
 		data = data->next;
 	}
 	return (find_place(&(*page)->next, size_wanted, page_size));
 }
-
-void	print_address(void)
-{
-	int i = 0;
-
-	while (i < 10000)
-	{
-		print_mem(g_address[i]);
-		i++;
-	}
-}
-
-#include <fcntl.h>
 
 void	rekt(int useless)
 {
@@ -463,7 +449,7 @@ void	free(void *ptr)
 	t_zone_id	ret;
 
 	//ft_putendl_fd("FREE", 2);
-	if (ptr == NULL)
+	if (!ptr)
 		return;
 	if (!(ret = find_zone_free(ptr)).page)
 		return;
