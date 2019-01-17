@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/16 10:50:31 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 10:49:55 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/17 12:56:29 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,12 @@ void	    free_without_check(void *ptr, t_zone_id ret);
 void	    show_alloc_mem(void);
 void	    print_mem(void *p0);
 char	    hex_digit(int v);
+
+/*
+**  ALIGN_DATA
+*/
+size_t	    align_size(size_t init_size);
+size_t	    round_page_size(size_t init_size);
 
 size_t			align_size(size_t size);
 void			show_alloc_mem(void);
