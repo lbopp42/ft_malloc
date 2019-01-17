@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/17 10:30:27 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/17 11:16:51 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,8 @@ CC = clang
 SRC_NAME = ft_malloc.c\
 	   free.c\
 	   calloc.c\
-	   realloc.c
+	   realloc.c\
+	   show_alloc_mem.c
 SRC_PATH = src
 SRC = $(addprefix $(SRC_PATH)/,$(SRC_NAME))
 OBJ = $(SRC:.c=.o)
