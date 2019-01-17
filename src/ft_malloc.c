@@ -6,12 +6,11 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 10:15:54 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/17 10:33:51 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
-#include "signal.h" //TODO DEBUG
 #define DEBUG 0
 
 size_t	align_size(size_t init_size)
@@ -401,94 +400,3 @@ void	*malloc(size_t size)
     data->is_free = 0;
     return ((char*)data + sizeof(t_meta));
 }
-
-void	*realloc(void *ptr, size_t size)
-{
-    char	*new;
-    t_meta	*data;
-    t_zone_id	ret;
-
-    if (!ptr)
-	return (malloc(size));
-    if (size == 0 && ptr)
-    {
-	free(ptr);
-	return (malloc(ALIGN));
-    }
-
-
-    if (!(ret = find_zone_free(ptr)).page)
-	return (NULL);
-    data = (t_meta*)((char*)ptr - sizeof(t_meta));
-    if (!check_data(ret.page, data))
-	return (NULL);
-    if (data->size >= align_size(size))
-	return (ptr);
-    new = malloc(size);
-    ft_memcpy(new, ptr, data->size);
-    free(ptr);
-    return (new);
-}
-
-void	*calloc(size_t count, size_t size)
-{
-    //ft_putendl_fd("CALLOC", 2);
-    void	*tmp;
-    if (!(tmp = malloc(count * size)))
-	return (NULL);
-    ft_bzero(tmp, count * size);
-    if (DEBUG == 1)
-    {
-	    t_meta  *data_tmp;
-
-	    data_tmp = (t_meta*)((char*)tmp - sizeof(t_meta));
-	    ft_putendl_fd("============= CALLOC =========================", 3);
-	    print_mem_fd((char*)data_tmp + sizeof(t_meta), 3);
-	    ft_putchar_fd('\n', 3);
-	    print_mem_fd((char*)data_tmp->prev + sizeof(t_meta), 3);
-	    ft_putchar_fd('\n', 3);
-	    show_alloc_mem_fd(3);
-	    verif_data();
-    }
-    return (tmp);
-}
-
-//int		main(void)
-//{
-//	ft_putendl("On entre dans le main");
-//	//char	*str[100000];
-//	//char	*str1[100000];
-//	char	*str2[2];
-//	int i;
-//	
-//	i = 0;
-//	while (i < 2)
-//	{
-//		ft_putendl("On malloc");
-//		//str[i] = malloc(1000);
-//		//ft_bzero(str[i], 1000);
-//		//str1[i] = malloc(100000);
-//		//ft_bzero(str1[i], 100000);
-//		//str[i] = malloc(500);
-//		//ft_bzero(str[i], 500);
-//		//str1[i] = malloc(2000);
-//		//ft_bzero(str1[i], 2000);
-//		str2[i] = malloc(1000000);
-//		ft_bzero(str2[i], 1000000);
-//		i++;
-//	}
-//	i = 0;
-//	while (i < 2)
-//	{
-//		//free(str[i]);
-//		//free(str1[i]);
-//		free(str2[i]);
-//		i++;
-//	}
-//	ft_putendl("============================================================================");
-//	ft_putendl("APRES FREE");
-//	show_alloc_mem();
-//	ft_putendl("----------------------------------------------------------------------------");
-//	sleep(2);
-//	return (1);
-//}

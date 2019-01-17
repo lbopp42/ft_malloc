@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/16 10:50:31 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 10:16:46 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/17 10:31:56 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,17 @@ void	    *fill_place(t_meta *data, size_t size_wanted, size_t page_size);
 t_page	    *create_page(size_t page_size);
 void	    init_data(t_meta **data, size_t page_size);
 
+/*
+**  CALLOC
+*/
+void	    *calloc(size_t count, size_t size);
 
-void			*realloc(void *ptr, size_t size);
-void			*calloc(size_t n, size_t size);
+/*
+**  REALLOC
+*/
+void	    *realloc(void *ptr, size_t size);
+void	    free_without_check(void *ptr, t_zone_id ret);
+
 size_t			align_size(size_t size);
 void			show_alloc_mem(void);
 
