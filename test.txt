@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "<input>", line 1, in <module>
-  File "/Users/lbopp/.brew/Cellar/python@2/2.7.15_1/Frameworks/Python.framework/Versions/2.7/lib/python2.7/copy.py", line 52, in <module>
-    import weakref
-  File "/Users/lbopp/.brew/Cellar/python@2/2.7.15_1/Frameworks/Python.framework/Versions/2.7/lib/python2.7/weakref.py", line 14, in <module>
-    from _weakref import (
-ImportError: cannot import name _remove_dead_weakref

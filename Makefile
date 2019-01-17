@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/17 12:57:20 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/17 16:48:19 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,8 @@ SRC_NAME = ft_malloc.c\
 	   calloc.c\
 	   realloc.c\
 	   show_alloc_mem.c\
+		 check_data.c\
+		 create_page.c\
 	   align_data.c
 SRC_PATH = src
 SRC = $(addprefix $(SRC_PATH)/,$(SRC_NAME))
