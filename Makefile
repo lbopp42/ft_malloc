@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/12 15:13:00 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/17 10:16:34 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ NAME = malloc_test.so
 CFLAGS = -Wall -Werror -Wextra -g
 LIBFT = libft/
 CC = clang
-SRC_NAME = ft_malloc.c
+SRC_NAME = ft_malloc.c\
+	   free.c
 SRC_PATH = src
 SRC = $(addprefix $(SRC_PATH)/,$(SRC_NAME))
 OBJ = $(SRC:.c=.o)
