@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/16 10:50:31 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 17:08:39 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/19 10:57:45 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,13 +47,14 @@ typedef struct		s_zone_id
 	int				type;
 }					t_zone_id;
 
-t_zone				g_zone[3];
-pthread_mutex_t		g_mutex_stock;
+t_zone					g_zone[3];
+extern pthread_mutex_t	g_mutex_stock;
 
 /*
 **  FREE
 */
 void				free(void *ptr);
+void				ft_free(void *ptr);
 void				try_remove_page(t_zone_id ret, t_meta *data);
 void				free_defrag(t_meta **data);
 

@@ -6,12 +6,13 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 16:48:07 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/19 10:38:00 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
-#define DEBUG 0
+
+pthread_mutex_t	g_mutex_stock = PTHREAD_MUTEX_INITIALIZER;
 
 void	*fill_place(t_meta *data, size_t size_wanted, size_t page_size)
 {
@@ -84,12 +85,17 @@ void	*malloc(size_t size)
 {
 	size_t	tiny_page;
 	size_t	small_page;
+	void	*ptr;
 
 	tiny_page = align_size(N) - sizeof(t_meta) - align_size(sizeof(t_page));
 	small_page = align_size(M) - sizeof(t_meta) - align_size(sizeof(t_page));
+	pthread_mutex_lock(&g_mutex_stock);
 	if (size <= TINY)
-		return (find_place(&g_zone[0].page, align_size(size), tiny_page));
-	if (size <= SMALL)
-		return (find_place(&g_zone[1].page, align_size(size), small_page));
-	return (malloc_large(size));
+		ptr = find_place(&g_zone[0].page, align_size(size), tiny_page);
+	else if (size <= SMALL)
+		ptr = find_place(&g_zone[1].page, align_size(size), small_page);
+	else
+		ptr = malloc_large(size);
+	pthread_mutex_unlock(&g_mutex_stock);
+	return (ptr);
 }

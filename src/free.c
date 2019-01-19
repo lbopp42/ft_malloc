@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/17 10:01:34 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/17 14:26:59 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/19 10:46:28 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ void		try_remove_page(t_zone_id ret, t_meta *data)
 	}
 }
 
-void		free(void *ptr)
+void		ft_free(void *ptr)
 {
 	t_meta		*data;
 	t_zone_id	ret;
@@ -71,4 +71,11 @@ void		free(void *ptr)
 	data->is_free = 1;
 	free_defrag(&data);
 	try_remove_page(ret, data);
+}
+
+void		free(void *ptr)
+{
+	pthread_mutex_lock(&g_mutex_stock);
+	ft_free(ptr);
+	pthread_mutex_unlock(&g_mutex_stock);
 }
