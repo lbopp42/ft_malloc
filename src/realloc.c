@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/17 10:28:17 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/19 10:57:39 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/19 14:57:00 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ void	*realloc(void *ptr, size_t size)
 		return (malloc(size));
 	if (size == 0 && ptr)
 	{
-		ft_putendl("ICI");
 		free(ptr);
 		return (malloc(ALIGN));
 	}

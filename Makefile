@@ -6,14 +6,14 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/17 16:48:19 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/19 14:13:53 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 ifeq ($(HOSTTYPE),)
 	HOSTTYPE := $(shell uname -m)_$(shell uname -s)
 endif
-NAME = malloc_test.so
+NAME = libft_malloc_$(HOSTTYPE).so
 CFLAGS = -Wall -Werror -Wextra -g
 LIBFT = libft/
 CC = clang
@@ -37,12 +37,14 @@ all: $(NAME)
 $(NAME): $(OBJ)
 	make -C libft
 	$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g
+	ln -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes
 
 clean:
 	make -C libft clean
+	unlink libft_malloc.so
 	$(RM) $(OBJ)
 
 fclean: clean
