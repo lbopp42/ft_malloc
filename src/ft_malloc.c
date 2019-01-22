@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/12 13:01:18 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/19 10:38:00 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/22 10:42:22 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ void	*find_place(t_page **page, size_t size_wanted, size_t page_size)
 	t_meta	*data;
 
 	if (!*page)
-		*page = create_page(page_size);
+		if (!(*page = create_page(page_size)))
+			return (NULL);
 	data = (t_meta*)((char*)*page + align_size(sizeof(t_page)));
 	while (data)
 	{
@@ -64,7 +65,8 @@ void	*malloc_large(size_t size)
 
 	if (!g_zone[2].page)
 	{
-		g_zone[2].page = create_page(align_size(size));
+		if ((g_zone[2].page = create_page(align_size(size))) == NULL)
+			return (NULL);
 		data = (t_meta*)((char*)g_zone[2].page + align_size(sizeof(t_page)));
 	}
 	else

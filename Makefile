@@ -6,7 +6,7 @@
 #    By: lbopp <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/10/11 14:38:33 by lbopp             #+#    #+#              #
-#    Updated: 2019/01/19 14:13:53 by lbopp            ###   ########.fr        #
+#    Updated: 2019/01/22 11:06:32 by lbopp            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,14 +37,14 @@ all: $(NAME)
 $(NAME): $(OBJ)
 	make -C libft
 	$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ) -I includes -I libft/includes -lft -L libft -g
-	ln -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
+	ln -sf libft_malloc_$(HOSTTYPE).so libft_malloc.so
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@ -I includes -I libft/includes
 
 clean:
 	make -C libft clean
-	unlink libft_malloc.so
+	if [ -f libft_malloc.so ] ; then rm libft_malloc.so;fi
 	$(RM) $(OBJ)
 
 fclean: clean

@@ -6,7 +6,7 @@
 /*   By: lbopp <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/16 10:50:31 by lbopp             #+#    #+#             */
-/*   Updated: 2019/01/19 15:23:40 by lbopp            ###   ########.fr       */
+/*   Updated: 2019/01/22 10:40:29 by lbopp            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void				*calloc(size_t count, size_t size);
 **  REALLOC
 */
 void				*realloc(void *ptr, size_t size);
+void				*reallocf(void *ptr, size_t size);
 void				free_without_check(void *ptr, t_zone_id ret);
 
 /*
